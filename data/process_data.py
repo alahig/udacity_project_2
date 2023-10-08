@@ -8,8 +8,6 @@ from sqlalchemy import create_engine
 def load_data(messages_filepath, categories_filepath):
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
-    #- Merge the messages and categories datasets using the common id
-    #- Assign this combined dataset to `df`, which will be cleaned in the following steps
 
     return messages, categories
 
@@ -31,6 +29,7 @@ def clean_data(messages, categories):
         elements = li.split(';')
         return {k.split('-')[0]: int(k.split('-')[-1]) for k in elements}
 
+    categories = categories.set_index('id').squeeze()
     categories = pd.DataFrame({i: convert_feature_list(v) for i, v in categories.items()}).T
 
     # There are a few entries where the related value is 2. This should be considered a dataerror
