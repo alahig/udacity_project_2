@@ -1,24 +1,78 @@
 import sys
+from custom_tokenizer import CustomTokenizer
+from sentence_meta_data_extractor import SentenceMetaData
+
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.pipeline import Pipeline, FeatureUnion
+
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV
+import pandas as pd
+from sqlalchemy import create_engine
+from sklearn.metrics import classification_report
+from sklearn.metrics import f1_score, precision_score, recall_score
+import re
+import pickle
 
 
 def load_data(database_filepath):
-    pass
+    engine = create_engine('sqlite:///'+database_filepath)
+    df = pd.read_sql_table('Messages', engine).iloc[:300, :6]
 
+    X = df['message']
+    Y = df.drop(['id', 'message', 'original', 'genre'], axis=1)
+    category_names = Y.columns
+    return X, Y, category_names
 
-def tokenize(text):
-    pass
 
 
 def build_model():
-    pass
+    tok = CustomTokenizer()
+    cv = CountVectorizer(tokenizer=tok)
+    tf = TfidfTransformer()
+    cl = MultiOutputClassifier(RandomForestClassifier(), n_jobs=8)
+
+    pipeline = Pipeline([
+        
+            ('features', FeatureUnion([
+
+            ('nlp_pipeline', Pipeline([
+                ('count', cv),
+                ('tfid', tf)
+                ])),
+
+            ('word_type_counter', SentenceMetaData())
+            ])),
+
+        
+        ('classifier', cl)
+    ])
+
+
+    from chosen_parameters import parameters
+    clf = GridSearchCV(pipeline, parameters)
+    return clf
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+    y_pred = pd.DataFrame(model.predict(X_test), columns=category_names)
+    classification = dict()
+    for c in y_pred.columns:
+        comp = (Y_test[c], y_pred[c])
+        classification[(c, 'precision')] = precision_score(*comp)
+        classification[(c, 'recall')] = recall_score(*comp)
+        classification[(c, 'f1')] = f1_score(*comp)
+
+
+    classification = pd.Series(classification).unstack()
+    print(classification)
 
 
 def save_model(model, model_filepath):
-    pass
+    pickle.dump(model, open(model_filepath, 'wb'))
+
 
 
 def main():
