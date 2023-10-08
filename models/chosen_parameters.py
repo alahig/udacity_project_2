@@ -16,7 +16,7 @@
 parameters = {
     'features__nlp_pipeline__count__tokenizer__replace_named_entities': [True], #False
     'features__nlp_pipeline__count__tokenizer__use_stemming': [True], # False
-    'classifier__estimator__n_estimators': [50], #100 150,
+    'classifier__estimator__n_estimators': [150], #100 150,
     'features__word_type_counter__use_question_mark': [False], # False
     'features__word_type_counter__use_pct_word_types': [False],  # False
     'features__word_type_counter__use_pct_capital_letters': [True],  # False
