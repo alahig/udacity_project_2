@@ -1,14 +1,14 @@
 import sys
-from custom_tokenizer import CustomTokenizer
-from sentence_meta_data_extractor import SentenceMetaData
+from models.custom_tokenizer import CustomTokenizer
+from models.sentence_meta_data_extractor import SentenceMetaData
 
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.pipeline import Pipeline, FeatureUnion
-
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
+
+from sklearn.model_selection import train_test_split
 import pandas as pd
 from sqlalchemy import create_engine
 from sklearn.metrics import classification_report
@@ -51,7 +51,7 @@ def build_model():
     ])
 
 
-    from chosen_parameters import parameters
+    from models.chosen_parameters import parameters
     clf = GridSearchCV(pipeline, parameters)
     return clf
 
