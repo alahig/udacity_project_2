@@ -22,7 +22,7 @@ To run the notebook, you will need the following:
 To install the required packages, you can use pip or conda. For example, with pip you can run:
 
 bash
-pip install -r requirements.txt
+./setup.sh
 
 
 ### Instructions:
