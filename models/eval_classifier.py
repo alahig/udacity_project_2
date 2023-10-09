@@ -15,15 +15,11 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import f1_score, precision_score, recall_score
 import re
 import pickle
+from sklearn.externals import joblib
 
-
-def load_data(database_filepath, fast=False):
+def load_data(database_filepath):
     engine = create_engine('sqlite:///'+database_filepath)
-    df = pd.read_sql_table('Messages', engine)
-    if fast:
-        print('Flag fast was passed, only using a small subset of the data and features')
-        # Use only subset of data and categories to demonstrate that the code works. 
-        df = df.iloc[:1000, :10]
+    df = pd.read_sql_table('Messages', engine)#.iloc[:300, :6]
 
     X = df['message']
     Y = df.drop(['id', 'message', 'original', 'genre'], axis=1)
@@ -31,33 +27,6 @@ def load_data(database_filepath, fast=False):
     return X, Y, category_names
 
 
-
-def build_model():
-    tok = CustomTokenizer()
-    cv = CountVectorizer(tokenizer=tok)
-    tf = TfidfTransformer()
-    cl = MultiOutputClassifier(RandomForestClassifier(), n_jobs=8)
-
-    pipeline = Pipeline([
-        
-            ('features', FeatureUnion([
-
-            ('nlp_pipeline', Pipeline([
-                ('count', cv),
-                ('tfid', tf)
-                ])),
-
-            ('word_type_counter', SentenceMetaData())
-            ])),
-
-        
-        ('classifier', cl)
-    ])
-
-
-    from models.chosen_parameters import parameters
-    clf = GridSearchCV(pipeline, parameters)
-    return clf
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
@@ -74,37 +43,23 @@ def evaluate_model(model, X_test, Y_test, category_names):
     print(classification)
 
 
-def save_model(model, model_filepath):
-    pickle.dump(model, open(model_filepath, 'wb'))
 
 
 
 def main():
-    if len(sys.argv) in [3, 4]:
-        if len(sys.argv) == 4:
-            assert sys.argv[3] == 'fast', f"Invalid flag: {sys.argv[3]}"
-            # Use this to accelerate the training by using only few datapoints
-            # Can be used to demonstrate the code works. 
-            fast = True
-        else:
-            fast = False
-            
-        database_filepath, model_filepath = sys.argv[1:3]
+    if len(sys.argv) == 3:
+        database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
-        X, Y, category_names = load_data(database_filepath, fast=fast)
+        X, Y, category_names = load_data(database_filepath)
         X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
         
         print('Building model...')
-        model = build_model()
+        model = joblib.load(model_filepath)
         
-        print('Training model...')
-        model.fit(X_train, Y_train)
         
         print('Evaluating model...')
         evaluate_model(model, X_test, Y_test, category_names)
 
-        print('Saving model...\n    MODEL: {}'.format(model_filepath))
-        save_model(model, model_filepath)
 
         print('Trained model saved!')
 

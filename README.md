@@ -33,6 +33,11 @@ bash
         `python data/process_data.py data/disaster_messages.csv data/disaster_categories.csv data/DisasterResponse.db`
     - To run ML pipeline that trains classifier and saves
         `python models/train_classifier.py data/DisasterResponse.db models/classifier.pkl`
+        
+    Training takes quite a while. To demonstrate the functionality of the code there is the possibility
+    to pass a flag "fast" so that the training is only done on a subpart of the data (first 1000 rows, 5 features).
+    `python models/train_classifier.py data/DisasterResponse.db models/classifier.pkl fast`
+    The accuracy is of course then low on the test set, given the limted availability of data.
 
 2. Go to `app` directory: `cd app`
 
