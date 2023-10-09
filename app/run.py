@@ -6,8 +6,7 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 import nltk
 
-nltk.download("stopwords")
-from nltk.corpus import stopwords
+
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
@@ -59,6 +58,9 @@ def index():
     genre_names = list(genre_counts.index)
 
     # Prepare the most used words in the dataset
+    nltk.download("stopwords")
+    from nltk.corpus import stopwords
+
     text = df["message"].sum()
     stopwords = set(stopwords.words("english"))
     text = text.lower()
